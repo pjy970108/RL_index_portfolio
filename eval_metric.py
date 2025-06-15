@@ -32,10 +32,6 @@ def calculate_sharpe_ratio(returns, risk_free_rate=0.02, annual_factor=252):
 # def calculate_cumulative_return(returns):
 #     returns = np.array(returns, dtype=np.float64)
 #     return np.prod(1 + returns) - 1
-
-def calculate_volatility(returns, annual_factor=252):
-    returns = np.asarray(returns)
-    return np.std(returns, ddof=1) * np.sqrt(annual_factor)
     
 def calculate_annualized_sortino_ratio(returns, risk_free_rate=0.02, annual_factor=252):
     """

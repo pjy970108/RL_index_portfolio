@@ -1,0 +1,87 @@
+# config/train_config.yaml
+
+# 📁 데이터 경로 설정
+data_paths:
+  before_csv : "data/before_train_v1.csv"
+  train_csv: "data/train_v1.csv"
+  train_pt: "data/no_tran_train_tensor_v2.pt"
+  train_pkl: "data/train_daily.pkl"
+
+device: "cuda:1"  # 예: "cpu", "cuda:0", "cuda:1"
+
+
+
+# 일반 환경 설정
+env_name: "Portfolio Allocation"
+trajectory_length: "3m"  # 선택: "1y", "6m", "3m"
+window_size: 20
+reward_cond: "combined_reward"
+
+# 리밸런싱 및 trajectory 세팅
+update_interval_map:
+  "1y": 252
+  "6m": 120
+  "3m": 60
+  "1m": 20
+  "5d" : 5
+
+
+
+# num_trajectories_map:
+#   "1y": 5
+#   "6m": 10
+#   "3m": 20
+
+num_trajectories : 64
+
+batch_samples:
+  "1y": 15
+  "6m": 15
+  "3m": 128
+  "1m": 256
+  "5d" : 256
+
+num_workers : 8
+
+
+mini_batch_size: 256
+
+
+temperatures  : 0.5
+
+# 학습 관련 설정
+num_iterations: 100
+num_steps: 5
+# batch_samples : 2
+num_group: 3
+mu: 3
+clip_grad: 1
+beta: 0.0
+# beta_schedule : [0.0, 0.001, 0.005, 0.01, 0.02]
+epsilon: 0.1
+alpha_param: 0.5
+
+# PPO 하이퍼파라미터
+gamma: 0.999
+lr_actor: 1e-6
+lr_critic: 1.0e-3
+eps_clip: 0.2
+has_continuous_action_space: True
+action_std_init: 0.6
+entropy_weight: 0.01
+patience: 10
+
+
+# Backtesting 수치 조정
+top_n: 5
+look_back: 252
+cost: 0.003
+top_pct : 0.5
+
+
+# eval_metrics
+risk_free_rate: 0.0
+annual_factor : 252
+risk_coefficient : 20
+top_pct : 0.5
+top_k : 5

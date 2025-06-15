@@ -25,18 +25,17 @@ sweep_config = {
     'metric': {'name': 'mean_reward', 'goal': 'maximize'},
     'parameters': {
         # 'lr_actor': {'values': [1e-6, 5e-6, 1e-5]},
-        'lr_actor': {'values': [1e-6, 5e-6, 1e-5]},
+        'lr_actor': {'values': [1e-6, 1e-5]},
         # 'clip_grad': {'values': [0.5, 0.1]},
-        'epsilon': {'values': [0.1, 0.2, 0.3]},
-        'beta': {'values': [0.04, 0.01]},
-        'mu': {'values': [30, 20, 10]},
+        'epsilon': {'values': [0.1]},
+        'beta': {'values': [0.04]},
+        'mu': {'values': [10, 5]},
         # 'num_group': {'values': [2, 4]},
-        'num_steps': {'values': [5, 10, 15]},
+        'num_steps': {'values': [10, 5]},
         'reward_cond': {'values': ["sharpe", "combined_reward"]},
-        "num_trajectories": {'values': [32, 64]}
+        "num_trajectories": {'values': [32]}
     }
 }
-
 
 def set_seed(seed):
     random.seed(seed)
@@ -185,8 +184,11 @@ def main_wandb():
 
     grpo_model_stats(wrapped_model, input_shape=(22, 13, 20))  # ← eval 호출
 
-    agent = optimize_model_memory(agent)
 
+
+    agent = optimize_model_memory(agent)
+    agent.policy.to("cpu")
+    env.states = env.states.to("cpu")
     trained_agent = train_with_grpo(agent=agent, env=env)
     final_path = os.path.join(model_path, "final_" + save_filename)
 
@@ -196,7 +198,7 @@ def main_wandb():
 
 if __name__ == "__main__":
     set_seed(42)
-    sweep_id = wandb.sweep(sweep_config, project="grppo_index_3m_v1")
+    sweep_id = wandb.sweep(sweep_config, project="grppo_index_3m_v2")
     wandb.agent(sweep_id, function=main_wandb)
 
     

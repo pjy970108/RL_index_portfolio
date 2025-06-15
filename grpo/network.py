@@ -88,7 +88,7 @@ class ActorCritic(nn.Module):
                 # print("action_mean", action_mean)
                 return action_mean.detach(), None, attn_scores  # logprob은 None으로
                 
-            cov_mat = torch.diag(self.action_var).unsqueeze(dim=0)
+            cov_mat = torch.diag(self.action_var).unsqueeze(dim=0).to(action_mean.device)
             dist = MultivariateNormal(action_mean, cov_mat)
             action = dist.sample()
             action_logprob = dist.log_prob(action)

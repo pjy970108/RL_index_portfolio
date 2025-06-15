@@ -8,6 +8,8 @@ import numpy as np
 # print(sys.path)
 import dynamic_portfolio as dp
 from backtesting import run_partial_backtests  # 함수만 명시적으로 import
+from torch.utils.data import Dataset, DataLoader
+from joblib import Parallel, delayed
 import torch
 import copy
 import random
@@ -47,10 +49,12 @@ class Stock_Env:
         self.device = config["device"]
         self.save_path = config["save_path"]
         # self.num_trajectories_map = config["num_trajectories_map"]
-        
+        self.num_workers = config.get("num_workers", 4)
+
         self.num_iterations = config["num_iterations"]
         self.num_steps = config["num_steps"]
         self.batch_samples = config["batch_samples"]
+        self.num_workers = config.get("num_workers", 4)
         self.mu = config["mu"]
         self.clip_grad = config["clip_grad"]
         self.beta = config["beta"]
@@ -130,7 +134,6 @@ class Stock_Env:
 
 
         return self.states[self.idx]  # shape: [n_agents, feature_dim]
-
 
     
     def softmax(self, actions_weights, temperature):

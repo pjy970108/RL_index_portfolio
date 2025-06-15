@@ -22,6 +22,7 @@ update_interval_map:
   "1y": 252
   "6m": 120
   "3m": 60
+  "1m": 20
 
 
 
@@ -33,9 +34,12 @@ update_interval_map:
 num_trajectories : 64
 
 batch_samples:
-  "1y": 64
-  "6m": 64
-  "3m": 64
+  "1y": 15
+  "6m": 15
+  "3m": 15
+  "1m": 32
+
+num_workers : 16
 
 
 mini_batch_size: 256
@@ -44,14 +48,14 @@ mini_batch_size: 256
 temperatures  : 0.5
 
 # 학습 관련 설정
-num_iterations: 10000
+num_iterations: 10
 num_steps: 5
 # batch_samples : 2
 num_group: 3
 mu: 3
-clip_grad: 0.5
+clip_grad: 1
 beta: 0.04
-epsilon: 0.2
+epsilon: 0.1
 alpha_param: 0.5
 
 # PPO 하이퍼파라미터

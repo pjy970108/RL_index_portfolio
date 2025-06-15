@@ -174,7 +174,7 @@ if __name__ == "__main__":
     import torch
     import copy
     import pandas as pd
-    from enviroment import EnvConfig, Stock_Env
+    from grpo.direct.enviroment import EnvConfig, Stock_Env
     import numpy as np
     from agent import PPO
     train_tensor = torch.load("/Users/pjy97/Desktop/hyu/research/RL/code/feature_extract/train_feature_extract.pt")

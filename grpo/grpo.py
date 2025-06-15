@@ -9,6 +9,8 @@ from agent import PPO
 from enviroment import Stock_Env
 import wandb
 from torch.utils.data import Dataset, DataLoader
+from joblib import Parallel, delayed
+import sys
 
 class TrajectoryDataset(Dataset):
     def __init__(self, trajectories, norm_rewards):
@@ -42,132 +44,67 @@ def get_memory_usage():
 # grpo가 환경에서 실행한 하나의 Trajectory
 # 그 후 몇개의 rollout 설정해
 
+def generate_single_group(idx, model_state, ref_state, env):
+    group = []
+    state = env.reset()
+    state = state.permute(1, 2, 0)
+    state = torch.tensor(state, dtype=torch.float32)
+    model = PPO(env)
+    ref_model = copy.deepcopy(model)
+    model.policy_old.to("cpu")
+    ref_model.policy_old.to("cpu")
+
+    model.policy_old.load_state_dict(model_state)
+    ref_model.policy_old.load_state_dict(ref_state)
+    ref_model.policy_old.eval()
+
+    for _ in range(env.num_trajectories):
+        trajectory = {"states": [], "actions": [], "log_probs": [], "rewards": [], "ref_log_probs": []}
+
+        with torch.no_grad():
+            for _ in range(env.update_interval):
+                actions, logprob, _ = model.policy_old.act(state)
+                _, ref_logprob, _ = ref_model.policy_old.act(state)
+
+                actions_np = actions.detach().cpu().numpy()
+                next_state, reward, done, _ = env.step(actions_np, group_reset=True)
+
+                trajectory["states"].append(state.clone().cpu())
+                actions_np = actions_np.reshape(-1)
+                trajectory["actions"].append(torch.tensor(actions_np, dtype=torch.float32))
+                trajectory["log_probs"].append(logprob.detach())
+                trajectory["rewards"].append(torch.tensor(reward, dtype=torch.float32))
+                trajectory["ref_log_probs"].append(ref_logprob.detach())
+
+                next_state = next_state.permute(1, 2, 0)
+                state = next_state.clone()
+                if done:
+                    print(env.idx)
+                    state = env.states[env.idx]
+                    state = state.permute(1, 2, 0)
+                    state= state.clone()
+                    pass
+
+        for key in trajectory:
+            trajectory[key] = torch.stack(trajectory[key])
+        group.append(trajectory)
+    return group
+
+
+# --- PARALLEL ROLLOUT ENTRY ---
 def generate_rollout_data(model, ref_model, env):
-    """
-    주식 환경 기반으로 GRPO 스타일의 rollout group 생성
-    - 각 group은 같은 초기 상태에서 num_generations 번 rollout
-    - 각 rollout은 trajectory로 저장됨
-    """    
-    roll_out_groups = []
-    # Random한 환경에서 실행한 Trajectory
-    # 다른 초기 상태
-    # 그룹별, trajectory states저장
-    # 그룹별로 다른 초기 상태에서 시작
-    for idx in range(env.batch_samples):
-        group = []
-        state = env.reset()
-        state = state.permute(1, 2, 0)
-        state = torch.tensor(state, dtype=torch.float32)
+    DEBUG_MODE = sys.gettrace() is not None  # VSCode 디버깅 중이면 True
 
-        # 그룹별로 몇번 trajectory를 만들것인지
-        # gen_idx만큼의  Trajectory를 만듬
-        # 같은 환경에서 Num_trajectories 만큼 만듦
-        for gen_idx in range(env.num_trajectories):
-            trajectory = {
-                "states": [],
-                "actions": [],
-                "log_probs": [],
-                "rewards": [],
-                "ref_log_probs": []
-            }
-            # curr_state = state.clone()
+    n_jobs = 1 if DEBUG_MODE else env.num_workers
+    print(f"Using {n_jobs} parallel workers for rollout generation.")
 
-            with torch.no_grad():
-
-                # done이 True가 될 때까지 반복 3, 6, 12 개월 마다 설정된 값만큼 돈다
-                for day_step in range(env.update_interval):
-                    # 정책만 가져온다.
-                    actions, action_logprob, att_score = model.policy_old.act(state)
-                    _, ref_log_probs, _ = ref_model.policy_old.act(state)
-
-                    actions = actions.detach().cpu().numpy()
-                    next_state, rewards, done, reward_dict = env.step(actions, group_reset = True)
-                    rewards = torch.tensor(rewards, dtype=torch.float32).cpu()
-                    
-                    trajectory["states"].append(state.clone().cpu())
-                    actions = actions.reshape(-1)
-                    trajectory["actions"].append(torch.tensor(actions, dtype=torch.float32).cpu())
-                    trajectory["log_probs"].append(action_logprob.detach().cpu())
-                    trajectory["rewards"].append(rewards)
-                    trajectory["ref_log_probs"].append(ref_log_probs.detach().cpu())
-                    next_state = next_state.permute(1, 2, 0)
-                    state = next_state.clone()
-
-                    if done:
-                        print(env.idx)
-                        state = env.states[env.idx]
-                        state = state.permute(1, 2, 0)
-                        state= state.clone()
-                        pass
-
-            for key in trajectory:
-                trajectory[key] = torch.stack(trajectory[key])
-            group.append(trajectory)
-        roll_out_groups.append(group)
-    return roll_out_groups
-
-
-# def grpo_update(agent, rollout_groups, env):
-#     """
-#     GRPO loss 계산 및 업데이트 수행
-#     rollout_groups: [ [gen_1, ..., gen_N], [gen_1, ..., gen_N], ... ]
-#     """
-#     all_trajectories = []
-#     norm_rewards_list = []
-
-#     # 그룹 단위로 reward 정규화 수행 후 전체 batch로 합치기
-#     for group in rollout_groups:
-#         group_returns = []
-#         for traj in group:
-#             traj_reward = traj["rewards"].sum()  # trajectory 전체에 대한 reward 합산
-#             group_returns.append(traj_reward)
-#         group_returns = torch.stack(group_returns)  # tensor로 변환
-
-#         mean_r = group_returns.mean()
-#         std_r = group_returns.std(unbiased=False) + 1e-8
-#         norm_rewards = (group_returns - mean_r) / std_r
-#         # 전체 group 통합합
-#         all_trajectories.extend(group)
-#         # 정규화된 reward를 리스트에 추가
-#         norm_rewards_list.extend(norm_rewards)
-
-#     all_losses = []
-#     all_advantages = []
-#     all_rewards = []
-#     total_loss = 0
-#     # 랜덤하게 trajectory를 선택해 batch 학습
-#     max_batch = env.mini_batch_size
-#     # 모든 group의 모든 Trajectory(5*20) 데이터와 mini_batch_size 중 작은 값으로 샘플링
-#     batch_indices = random.sample(range(len(all_trajectories)), k=min(max_batch, len(all_trajectories)))
-
-#     for i in batch_indices:
-#         traj = all_trajectories[i]
-#         traj["actions"] = traj["actions"].to(env.device)
-#         traj["states"] = traj["states"].to(env.device)
-#         traj["log_probs"] = traj["log_probs"].to(env.device)
-#         traj["ref_log_probs"] = traj["ref_log_probs"].to(env.device)
-#         traj["rewards"] = traj["rewards"].to(env.device)
-
-#         logprob_old = traj["log_probs"].mean()
-#         logprob_ref = traj["ref_log_probs"].mean()
-
-#         logprob_new, _ = agent.policy.evaluate(traj["states"], traj["actions"])
-#         logprob_new = logprob_new.mean()
-
-#         ratio = torch.exp(logprob_new - logprob_old)
-#         clipped_ratio = torch.clamp(ratio, 1 - env.epsilon, 1 + env.epsilon)
-
-#         advantage = norm_rewards_list[i]
-#         surrogate = torch.min(ratio * advantage, clipped_ratio * advantage)
-
-#         kl = torch.exp(logprob_ref - logprob_new) - (logprob_ref - logprob_new) - 1
-#         loss = -surrogate + env.beta * kl
-
-#         total_loss += loss
-#         all_losses.append(loss)
-#         all_advantages.append(advantage)
-#         all_rewards.append(traj["rewards"].sum())
-#     return total_loss, all_rewards, all_advantages
+    model_state = model.policy_old.state_dict()
+    ref_state = ref_model.policy_old.state_dict()
+    rollout_groups = Parallel(n_jobs=n_jobs)(
+        delayed(generate_single_group)(idx, model_state, ref_state, env)
+        for idx in range(env.batch_samples)
+    )
+    return rollout_groups
 
 
 def grpo_update(agent, rollout_groups, env, optimizer):
@@ -196,13 +133,17 @@ def grpo_update(agent, rollout_groups, env, optimizer):
     all_advantages = []
 
     for batch in loader:
-        batch = {k: v.to(env.device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
+        states = batch["states"].to(env.device, non_blocking=True)
+        actions = batch["actions"].to(env.device, non_blocking=True)
+        log_probs = batch["log_probs"].to(env.device, non_blocking=True)
+        ref_log_probs = batch["ref_log_probs"].to(env.device, non_blocking=True)
+        # rewards = batch["rewards"].to(env.device, non_blocking=True)
+        advantage = batch["advantage"].to(env.device, non_blocking=True)
+        
+        logprob_old = log_probs.mean(dim=1).squeeze(-1)
+        logprob_ref = ref_log_probs.mean(dim=1).squeeze(-1)
 
-        logprob_old = batch["log_probs"].mean(dim=1).squeeze(-1)
-        logprob_ref = batch["ref_log_probs"].mean(dim=1).squeeze(-1)
-        advantage = batch["advantage"]
-
-        logprob_new, _ = agent.policy.evaluate(batch["states"], batch["actions"])
+        logprob_new, _ = agent.policy.evaluate(states, actions)
         logprob_new = logprob_new.mean(dim=1)
 
         ratio = torch.exp(logprob_new - logprob_old)
@@ -219,10 +160,11 @@ def grpo_update(agent, rollout_groups, env, optimizer):
         optimizer.step()
 
         total_loss += loss.item()
-        all_rewards.append(batch["rewards"].sum().item())
-        all_advantages.append(advantage.sum().item())
+        all_rewards.append(batch["rewards"].mean(dim=1).mean())
+        all_advantages.append(advantage.mean().item())
+    avg_epoch_loss = total_loss / len(loader)
 
-    return total_loss, all_rewards, all_advantages
+    return avg_epoch_loss, all_rewards, all_advantages
 
 
 
@@ -260,9 +202,13 @@ def train_with_grpo(agent, env):
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
             
+            # agent.policy_old.to(env.device)
+            # ref_model.policy_old.to(env.device)            
+            agent.policy.to(env.device)
+
             for grpo_iter in range(env.mu):
                 print(f"  GRPO update {grpo_iter+1}/{env.mu}")
-                total_loss, all_rewards, all_advantages = grpo_update(
+                avg_epoch_loss, all_rewards, all_advantages = grpo_update(
                     agent,
                     rollout_data,
                     env,
@@ -274,14 +220,14 @@ def train_with_grpo(agent, env):
                 # torch.nn.utils.clip_grad_norm_(agent.parameters(), env.clip_grad)
                 # optimizer.step()
                 wandb.log({
-                "mean_loss": float(total_loss),
+                "mean_loss": float(avg_epoch_loss),
                 "mean_reward": float(torch.tensor(all_rewards).mean()),
                 "mean_advantage": float(torch.tensor(all_advantages).mean())
             })
 
                 
 
-                print(f"    → Loss: {float(total_loss):.4f}, "
+                print(f"    → Loss: {float(avg_epoch_loss):.4f}, "
                       f"Reward: {float(torch.tensor(all_rewards).mean()):.4f}, "
                       f"Advantage: {float(torch.tensor(all_advantages).mean()):.4f}")
                 if (iteration + 1) % 2 == 0 and (grpo_iter + 1) % env.mu == 0:
