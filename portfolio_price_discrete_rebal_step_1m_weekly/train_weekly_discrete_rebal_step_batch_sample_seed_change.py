@@ -136,7 +136,7 @@ def main_wandb():
     #     del arr
     
     # with open(config["data_paths"]["train_pkl"], "rb") as f:
-    #     train_scaled = pickle.load(f)
+    #     train_scaled = pickle.load(f)   
 
     feature_dim = train_tensor.shape[-1]
 

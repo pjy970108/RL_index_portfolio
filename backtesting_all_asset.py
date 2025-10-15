@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from dynamic_portfolio_monthly import *
+from dynamic_portfolio import *
 
 def run_partial_backtests(
     df_long: pd.DataFrame,
@@ -291,13 +291,13 @@ def eval_partial_backtests_v2(
 
     try:
                 
-        strategies['risk_parity'] = backtest_strategy(equal_pivot_return, compute_risk_parity_weight_from_window, rebalance_every, look_backs, cost, rebalance_every)
+        strategies['risk_parity'] = backtest_strategy(equal_pivot_return, compute_risk_parity_weight_from_window, rebalance_every, look_backs, cost)
         
-        strategies['min_var'] = backtest_strategy(equal_pivot_return, compute_minvar_weights, rebalance_every, look_backs, cost, rebalance_every)
-        strategies['max_sharpe'] = backtest_strategy(equal_pivot_return, compute_max_sharpe_min_var, rebalance_every, look_backs, cost, rebalance_every, risk_free_rate=risk_free_rate)
-        strategies['paa'] = backtest_paa_from_pivot(equal_pivot_return, all_pivot_paa_score, look_backs, rebalance_every, top_n, 0.0, cost,rebalance_every)
+        strategies['min_var'] = backtest_strategy(equal_pivot_return, compute_minvar_weights, rebalance_every, look_backs, cost)
+        strategies['max_sharpe'] = backtest_strategy(equal_pivot_return, compute_max_sharpe_min_var, rebalance_every, look_backs, cost, risk_free_rate=risk_free_rate)
+        strategies['paa'] = backtest_paa_from_pivot(equal_pivot_return, all_pivot_paa_score, look_backs, rebalance_every, top_n, 0.0, cost)
 
-        strategies['equal'] = backtest_equal_weight_20day(equal_pivot_return, rebalance_every, look_backs, cost, rebalance_every)
+        strategies['equal'] = backtest_equal_weight_20day(equal_pivot_return, rebalance_every, look_backs, cost)
         
         
     except Exception as e:

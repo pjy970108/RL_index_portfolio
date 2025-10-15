@@ -9,7 +9,7 @@ data_paths:
   train_pt: "data/portfolio_price/portfolio_train_v5.pt"
   valid_pt : "data/portfolio_price/portfolio_valid_v5.pt"
 
-device: "cuda:0"  # 예: "cpu", "cuda:0", "cuda:1"
+device: "cuda:1"  # 예: "cpu", "cuda:0", "cuda:1"
 
 
 

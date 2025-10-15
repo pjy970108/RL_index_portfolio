@@ -80,15 +80,15 @@ class Stock_Env:
         if eval:
             self.trading_start_date = config["TRADE_START_DATE"]
             # test_df = pd.read_csv(config["data_paths"]["portfolio_path"], index_col=0)
-            # imp_data = self.index_df[self.index_df.index >= "2019-01-01"]
-            # date_list = imp_data.index.unique()
+            imp_data = self.index_df[self.index_df.index >= "2019-01-01"]
+            date_list = imp_data.index.unique()
             self.trading_end_date = config["TRADE_END_DATE"]
-            # start_index = date_list.get_loc(self.trading_start_date)
-            # end_index = date_list.get_loc(self.trading_end_date)
+            start_index = date_list.get_loc(self.trading_start_date)
+            end_index = date_list.get_loc(self.trading_end_date)
             test_date = self.index_df[(self.index_df.index >= self.trading_start_date)&(self.index_df.index <= self.trading_end_date)]
             self.days = list(test_date.index.unique())
             self.max_step = len(self.days)
-            # self.states = states[start_index:end_index+1]
+            self.states = states[start_index:end_index+1]
         else:
             self.max_step = config["update_interval"]
             self.days = list(self.index_df.index.unique()[self.look_back*2:])

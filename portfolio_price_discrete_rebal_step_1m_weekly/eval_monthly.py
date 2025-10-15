@@ -27,12 +27,12 @@ if __name__ == "__main__":
     SEED = 42
     set_seed(SEED)
     
-    with open("./portfolio_price_discrete_rebal_step_1m/config/test_config.yaml", "r") as f:
+    with open("./portfolio_price_discrete_rebal_step_1m_weekly/config/test_config.yaml", "r") as f:
         config = yaml.safe_load(f)
         
     train_data_path = "data/train_v3.csv"
     test_data_path = "data/test_v3.csv"
-    test_pt = "data/portfolio_price/portfolio_test_v4.pt"
+    test_pt = "data/portfolio_price/portfolio_test_v5.pt"
     
     device = torch.device(config.get("device", "cuda:0"))
     config["device"] = device
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     
     
     test_tensor = torch.load(config["data_paths"]["test_pt"], map_location=device)
-    traj_len ="1m"
+    traj_len ="5d"
     update_interval = config["update_interval_map"].get(traj_len, 60)
     config["update_interval"] = update_interval
     config["batch_samples"] = config["batch_samples"].get(traj_len, 5)

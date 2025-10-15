@@ -35,12 +35,16 @@ def compute_max_sharpe_min_var(mu, cov_matrix, risk_free_rate=0.0):
     ]
 
     prob = cp.Problem(objective, constraints)
-    prob.solve()
-    
-    if w_tilde.value is not None and k.value is not None and k.value > 0:
-        w = w_tilde.value / k.value
-        return w
-    else:
+    try:
+        prob.solve()
+        if w_tilde.value is not None and k.value is not None and k.value > 0:
+            w = w_tilde.value / k.value
+            return w
+        else:
+            print("최적화 실패. 균등 포트폴리오로 fallback.")
+            return np.zeros(n)
+    except cp.error.SolverError as e:
+        print(f"최적화 오류: {e}")
         print("최적화 실패. 균등 포트폴리오로 fallback.")
         return np.zeros(n)
 

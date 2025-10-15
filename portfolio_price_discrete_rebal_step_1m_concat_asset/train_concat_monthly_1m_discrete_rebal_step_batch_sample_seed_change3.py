@@ -8,7 +8,7 @@ import yaml
 import pandas as pd
 import pickle
 
-from grpo import train_with_grpo, optimize_model_memory
+from grpo_monthly import train_with_grpo, optimize_model_memory
 from agent import PPO, ForwardableActorCritic
 import copy
 # sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "base_line_model/Task_1_FinRL_DeepSeek_Stock")))
@@ -26,17 +26,19 @@ sweep_config = {
     'metric': {'name': 'mean_reward', 'goal': 'maximize'},
     'parameters': {
         # 'lr_actor': {'values': [1e-6, 5e-6, 1e-5]},
-        'lr_actor': {'values': [1e-5]},
+        'lr_actor': {'values': [1e-6]},
         # 'clip_grad': {'values': [0.5, 0.1]},
-        'epsilon': {'values': [0.1]},
+        'epsilon': {'values': [0.2]},
         'beta': {'values': [0.0]},
-        'mu': {'values': [50]},
+        'mu': {'values': [100]},
         # 'num_group': {'values': [2, 4]},
         'num_steps': {'values': [10]},
         'reward_cond': {'values': ["sharpe"]},
         "num_trajectories": {'values': [16]},
-        "batch_samples": {'values': [1024]},
-        "seed" : {'values': [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]}
+        "batch_samples": {'values': [2048]},
+        # "seed" : {'values': [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]}
+        "seed" : {'values': [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]}
+
     }
 }
 
@@ -81,10 +83,10 @@ def main_wandb():
         test_config = yaml.safe_load(f)
 
     # 2. 디바이스 처리
-    # device = torch.device(config.get("device", "cuda:0"))
-    # config["device"] = device
-    device = "cuda:0"
+    device = torch.device(config.get("device", "cuda:0"))
     config["device"] = device
+    # device = "cuda:0"
+    # config["device"] = device
     
     # 3. Train 데이터 로드
     index_before_df = pd.read_csv(config["data_paths"]["index_before_csv"], index_col=0)
@@ -174,7 +176,7 @@ def main_wandb():
     # lr = 5e-5
     # 경로 없으면 경로 생성하는 코드
     # 6. 모델 저장 경로 설정
-    model_path = f'./portfolio_price_discrete_rebal_step_1m_concat_asset/model/{traj_len}_seed/'
+    model_path = f'./portfolio_price_discrete_rebal_step_1m_concat_asset/model/{traj_len}_seed_v5/'
     os.makedirs(model_path, exist_ok=True)
 
     save_filename = (
@@ -216,7 +218,7 @@ def main_wandb():
     wandb.finish()
 
 if __name__ == "__main__":
-    sweep_id = wandb.sweep(sweep_config, project="grpo_portfolio_rebal_minmax_1m_monthly")
+    sweep_id = wandb.sweep(sweep_config, project="grpo_portfolio_rebal_seed")
     wandb.agent(sweep_id, function=main_wandb)
 
     

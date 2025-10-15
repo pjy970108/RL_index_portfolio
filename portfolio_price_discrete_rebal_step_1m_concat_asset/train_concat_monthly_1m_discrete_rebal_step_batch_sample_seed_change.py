@@ -26,17 +26,20 @@ sweep_config = {
     'metric': {'name': 'mean_reward', 'goal': 'maximize'},
     'parameters': {
         # 'lr_actor': {'values': [1e-6, 5e-6, 1e-5]},
-        'lr_actor': {'values': [1e-5]},
+        'lr_actor': {'values': [1e-6]},
         # 'clip_grad': {'values': [0.5, 0.1]},
-        'epsilon': {'values': [0.1]},
+        'epsilon': {'values': [0.2]},
         'beta': {'values': [0.0]},
-        'mu': {'values': [50]},
+        'mu': {'values': [100]},
         # 'num_group': {'values': [2, 4]},
         'num_steps': {'values': [10]},
         'reward_cond': {'values': ["sharpe"]},
         "num_trajectories": {'values': [16]},
-        "batch_samples": {'values': [1024]},
-        "seed" : {'values': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}
+        "batch_samples": {'values': [2048]},
+        # "seed" : {'values': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] }
+        "seed" : {'values': [0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] }
+        # "seed" : {'values': [0]}
+
     }
 }
 
@@ -172,7 +175,7 @@ def main_wandb():
     # lr = 5e-5
     # 경로 없으면 경로 생성하는 코드
     # 6. 모델 저장 경로 설정
-    model_path = f'./portfolio_price_discrete_rebal_step_1m_concat_asset/model/{traj_len}_seed/'
+    model_path = f'./portfolio_price_discrete_rebal_step_1m_concat_asset/model/{traj_len}_seed_v5/'
     os.makedirs(model_path, exist_ok=True)
 
     save_filename = (
@@ -214,7 +217,7 @@ def main_wandb():
     wandb.finish()
 
 if __name__ == "__main__":
-    sweep_id = wandb.sweep(sweep_config, project="grpo_portfolio_rebal_minmax_1m_monthly")
+    sweep_id = wandb.sweep(sweep_config, project="grpo_portfolio_rebal_seed")
     wandb.agent(sweep_id, function=main_wandb)
 
     

@@ -7,7 +7,7 @@ data_paths:
   future_train_csv : "data/future_train_v3.csv"
   future_test_csv: "data/future_test_v3.csv"
   test_pt: "data/portfolio_price/concat_portfolio_test_monthly_v1.pt"
-  model_path: "portfolio_price_discrete_rebal_step_1m/model/1m/final_1m_actor_lr1e-05_clip_grad1_epslion_0.1batch_sample_1024_mu50_num_group16_num_steps10_reward_cond_combined_reward_grpo_model.pth"
+  model_path: "portfolio_price_discrete_rebal_step_1m_concat_asset/model/1m_seed/final_1m_actor_lr1e-05_clip_grad1_epslion_0.1batch_sample_1024_mu50_num_group16_num_steps10_reward_cond_sharpe_seed40_grpo_model.pth"
   portfolio_path: "data/portfolio_price/test_portfolio_price_v5.csv"
 device: "cuda:1"  # 예: "cpu", "cuda:0", "cuda:1"
 
@@ -77,7 +77,7 @@ patience: 10
 # Backtesting 수치 조정
 top_n: 5
 look_back: 252
-cost: 0.003
+cost: 0.005
 top_pct : 0.5
 
 

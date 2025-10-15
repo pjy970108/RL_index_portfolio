@@ -23,15 +23,34 @@ def calculate_volatility(returns, annual_factor=252):
 def calculate_sharpe_ratio(returns, risk_free_rate=0.02, annual_factor=252):
     returns = np.array(returns, dtype=np.float64)
     annual_return = calculate_annual_return(returns, annual_factor)
-    annual_std_dev = calculate_volatility(returns, annual_factor)
     excess_return =  (annual_return - risk_free_rate) 
+    if excess_return == 0:
+        sign = 1
+    else:
+        sign = excess_return / abs(excess_return)
+    annual_std_dev = calculate_volatility(returns, annual_factor)
     # 연환산 수익률과 표준편차
-    return excess_return / annual_std_dev if annual_std_dev != 0 else 0.0
+    modified_sharpe =  excess_return / (annual_std_dev ** sign)  if annual_std_dev != 0 else 0.0
+    return modified_sharpe
 
 
 # def calculate_cumulative_return(returns):
 #     returns = np.array(returns, dtype=np.float64)
 #     return np.prod(1 + returns) - 1
+
+
+def calculate_downside_deviation(returns, threshold=0.0, annual_factor=252, annualize=True):
+    downside = np.minimum(returns - threshold, 0)
+    dd = np.sqrt(np.mean(downside ** 2))
+    return dd * np.sqrt(annual_factor) if annualize else dd
+
+
+def calculate_annualized_sortino_ratio(returns, risk_free_rate=0.02, annual_factor=252):
+    annual_return = calculate_annual_return(returns, annual_factor)
+    excess_return = annual_return - risk_free_rate
+    downside_dev = calculate_downside_deviation(returns, threshold=0.0, annual_factor=annual_factor)
+    return excess_return / downside_dev if downside_dev != 0 else 0.0
+
     
 def calculate_annualized_sortino_ratio(returns, risk_free_rate=0.02, annual_factor=252):
     """

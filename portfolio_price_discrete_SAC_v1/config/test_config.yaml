@@ -1,0 +1,88 @@
+# config/train_config.yaml
+
+# 📁 데이터 경로 설정
+data_paths:
+  index_train_csv: "data/train_v3.csv"
+  index_test_csv: "data/test_v3.csv"
+  future_train_csv : "data/future_train_v3.csv"
+  future_test_csv: "data/future_test_v3.csv"
+  test_pt: "data/portfolio_price/concat_portfolio_test_monthly_v1.pt"
+  model_path: "portfolio_price_discrete_SAC_v1/model/3m_seed_v1/final_3m_actor_lr1e-05_critic_lr1e-06_gamma0.99_entropy_weight0.1_epsilon_0.1mu50_reward_cond_sharpe_seed42_sac_model.pth"
+  portfolio_path: "data/portfolio_price/test_portfolio_price_v5.csv"
+device: "cuda:1"  # 예: "cpu", "cuda:0", "cuda:1"
+
+# 일반 환경 설정
+env_name: "Portfolio Allocation"
+trajectory_length: "3m"  # 선택: "1y", "6m", "3m"
+window_size: 20
+reward_cond: "combined_reward"
+
+# 리밸런싱 및 trajectory 세팅
+update_interval_map:
+  "1y": 252
+  "6m": 120
+  "3m": 60
+  "1m": 20
+
+TRAIN_START_DATE : '2000-01-10'
+TRAIN_END_DATE : '2009-12-31'
+TRADE_START_DATE : '2014-01-01'
+TRADE_END_DATE : '2018-12-31'
+
+
+# num_trajectories_map:
+#   "1y": 5
+#   "6m": 10
+#   "3m": 20
+
+num_trajectories : 64
+
+batch_samples:
+  "1y": 15
+  "6m": 15
+  "3m": 15
+  "1m": 32
+
+num_workers : 16
+
+
+mini_batch_size: 1024
+
+
+temperatures  : 0.5
+
+# 학습 관련 설정
+# batch_samples : 2
+mu: 3
+clip_grad: 1
+beta: 0.04
+epsilon: 0.1
+alpha_param: 0.5
+epochs : 100
+
+# PPO 하이퍼파라미터
+gamma: 0.999
+lr_actor: 1e-6
+lr_critic: 1e-5
+epslion: 0.2
+has_continuous_action_space: False
+action_std_init: 0.6
+entropy_weight: 0.01
+patience: 10
+tau : 0.005
+
+
+# Backtesting 수치 조정
+top_n: 5
+look_back: 252
+cost: 0.003
+top_pct : 0.5
+
+buffer_size : 2520
+
+# eval_metrics
+risk_free_rate: 0.0
+annual_factor : 12
+risk_coefficient : 20
+top_pct : 0.5
+top_k : 5
