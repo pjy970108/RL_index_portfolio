@@ -26,8 +26,7 @@ if __name__ == "__main__":
 
     SEED = 42
     set_seed(SEED)
-    
-    with open("./portfolio_price_discrete_rebal_step_1m_concat_asset/config/test_config.yaml", "r") as f:
+    with open("./portfolio_price_discrete_rebal_step_1m_concat_sharpe/config/test_config.yaml", "r") as f:
         config = yaml.safe_load(f)
         
     train_data_path = "data/train_v3.csv"

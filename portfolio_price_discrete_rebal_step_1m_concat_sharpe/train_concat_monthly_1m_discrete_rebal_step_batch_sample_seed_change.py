@@ -34,7 +34,9 @@ sweep_config = {
         # 'num_group': {'values': [2, 4]},
         'num_steps': {'values': [10]},
         'reward_cond': {'values': ["sharpe"]},
-        "num_trajectories": {'values': [16]},
+        # "num_trajectories": {'values': [16]},
+
+        "num_trajectories": {'values': [17, 32, 64]},
         "batch_samples": {'values': [2048]},
         # "seed" : {'values': [8, 9, 10, 11, 12, 13, 14, 15] }
         "seed" : {'values': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] }
@@ -176,7 +178,7 @@ def main_wandb():
     # lr = 5e-5
     # 경로 없으면 경로 생성하는 코드
     # 6. 모델 저장 경로 설정
-    model_path = f'./portfolio_price_discrete_rebal_step_1m_concat_sharpe/model/{traj_len}_seed_v2_3/'
+    model_path = f'./portfolio_price_discrete_rebal_step_1m_concat_sharpe/model/{traj_len}_seed_action_{config["num_trajectories"]}/'
     os.makedirs(model_path, exist_ok=True)
 
     save_filename = (

@@ -267,10 +267,19 @@ def bootstrap_inference(returns: npt.NDArray[np.float64], block_size: int, alpha
     l = int(np.floor(T / block_size))
     sigma_hat = np.std(returns, axis=0)
     mu_hat = np.mean(returns, axis=0)
+
+    sign = np.where(mu_hat == 0, 1, mu_hat / np.abs(mu_hat))
+    SR_hat = np.where(sigma_hat != 0, mu_hat / (sigma_hat ** sign), 0.0)
+
+    
     SR_hat = mu_hat / sigma_hat
     SR_diff = np.diff(SR_hat)[0]
     hac_se = compute_se_parzen_relative(returns)
+    # 양측
     d = np.abs(SR_diff - delta_null) / hac_se
+    # 단측
+    # d = (SR_diff - delta_null) / hac_se  # 단측 (방향 유지)
+
     p_value = 1.0
     se = 0.0
     bs = bootstrap.CircularBlockBootstrap(block_size, returns)
@@ -307,6 +316,7 @@ def bootstrap_inference(returns: npt.NDArray[np.float64], block_size: int, alpha
             
         psi_hat_star = psi_hat_star / l
         psi_hat_star = (T / (T - 4)) * psi_hat_star
+        # # 양측
         se_star = np.sqrt(gradient.T @ psi_hat_star @ gradient / T)
         d_star = np.abs(SR_diff_star - SR_diff) / se_star
         d_star_arr[m] = d_star
@@ -314,6 +324,17 @@ def bootstrap_inference(returns: npt.NDArray[np.float64], block_size: int, alpha
         se = se + se_star
         if d_star >= d:
             p_value = p_value + 1
+
+        #단측
+        # se_star = np.sqrt(gradient.T @ psi_hat_star @ gradient / T)
+        # d_star = (SR_diff_star - SR_diff) / se_star  # ← 부호 유지
+        # d_star_arr_non_abs[m] = d_star
+        # se += se_star
+
+        # # 단측 검정: Δ > δ_0
+        # if d_star >= d:
+        #     p_value += 1
+
 
     p_value = p_value / (M + 1)
     se = se / (M + 1)
