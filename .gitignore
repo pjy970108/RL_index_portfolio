@@ -178,3 +178,5 @@ cython_debug/
 /data
 /wandb
 /grpo/model
+**/wandb/
+**/model/
