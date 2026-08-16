@@ -73,6 +73,5 @@ The retained robustness checks are:
 - Transaction cost sensitivity at 0, 10, 20, 30, 40, and 50 bps.
 - GRPO action-sampling sensitivity using 8, 16, and 32 sampled actions.
 
-The paper figures retained under `result/figures/paper_figures/` correspond to
-the final reporting layer; intermediate notebooks and large result tables are
-not tracked in Git.
+The paper figures retained under `result/` correspond to the final reporting
+layer; intermediate notebooks and large result tables are not tracked in Git.

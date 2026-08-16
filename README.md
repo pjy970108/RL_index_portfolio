@@ -55,7 +55,7 @@ RL_index_portfolio/
 |   `-- sac_benchmark/             # SAC benchmark
 |-- backtest/                      # Final strategy backtest and metric utilities
 |-- evaluation/                    # OOS evaluation protocol and statistical tests
-|-- result/figures/paper_figures/  # Minimal paper figure assets
+|-- result/                        # Minimal paper figure assets
 |-- scripts/                       # Shell entry points
 |-- DATA_CONTRACT.md               # Data period and feature contract
 |-- CODE_MAP.md
@@ -182,7 +182,7 @@ evaluation protocol and reusable test utilities.
 Minimal paper figure assets are retained in:
 
 ```text
-result/figures/paper_figures/
+result/
 ```
 
 Intermediate notebooks, W&B artifacts, model checkpoints, and large tabular

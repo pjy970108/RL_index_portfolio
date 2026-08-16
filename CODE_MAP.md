@@ -10,7 +10,7 @@ This file maps the submitted code surface to the paper workflow.
 | SAC benchmark | `modeling/sac_benchmark/` | SAC comparison model. |
 | Backtest utilities | `backtest/` | Final daily/monthly strategy-return wrappers and performance metrics. |
 | Evaluation | `evaluation/` | Final OOS evaluation protocol, performance summaries, and statistical tests. |
-| Paper figures | `result/figures/paper_figures/` | Minimal retained thesis figure assets. |
+| Paper figures | `result/` | Minimal retained thesis figure assets. |
 | Run scripts | `scripts/` | Root-level training and evaluation entry points. |
 | Data contract | `DATA_CONTRACT.md` | Data periods, lookback window, feature definitions, and leakage boundary. |
 
