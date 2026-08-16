@@ -1,62 +1,57 @@
 # Code Map
 
-This map explains how the research code is organized. The main path is the
-final GRPO Sharpe experiment, with baseline models, preprocessing notebooks,
-figures, and earlier experiment variants separated by role.
+This file maps the submitted code surface to the paper workflow.
 
-| Category | Location | Notes |
+| Stage | Location | Role |
 |---|---|---|
-| Final GRPO Sharpe experiment | `experiments/grpo_sharpe/` | Main research code path. Uses GRPO with Sharpe reward in sweep scripts. |
-| Shared portfolio/backtest code | `core/portfolio_strategies/` | Dynamic portfolio strategies, partial backtests, and performance metrics. |
-| PPO baseline | `baselines/ppo/` | Comparison baseline variants. Includes original, v1, and Sharpe-centered folders. |
-| SAC baseline | `baselines/sac/` | Comparison baseline variants. Includes original and Sharpe-centered folders. |
-| Data preprocessing notebooks | `notebooks/data_preprocessing/` | Data cleaning, indicator, and portfolio tensor construction notebooks. |
-| Remove-asset preprocessing | `notebooks/data_preprocessing/make_portfolio_pricing_total_price_v2_asset_del.ipynb` | Builds remove-asset data artifacts referenced by later evaluation notebooks. |
-| Final figure notebooks | `notebooks/final_figures/` | Reporting and paper-style plot notebooks. |
-| EDA notebooks | `notebooks/eda_distribution/` | Distribution and sampling checks. |
-| Figure outputs | `results/figures/` | PNG assets and generated figure directory. |
-| Earlier concat-asset GRPO | `legacy/grpo_concat_asset_original/` | Earlier or original concat-asset experiment folder. Core code matches the Sharpe folder, but result/evaluation artifacts differ. |
-| Older GRPO prototype | `legacy/old_grpo/grpo/` | Earlier GRPO implementation with `tarn.TARN` dependency. |
-| Delete candidates | `legacy/delete_candidates/` | Empty or obsolete files separated for review. |
+| Data construction | `data_pipeline/` | Builds local price, feature, and tensor artifacts. |
+| Final model | `modeling/grpo_sharpe/` | GRPO with Sharpe reward and min-max normalized group-return advantage. |
+| PPO benchmark | `modeling/ppo_benchmark/` | PPO comparison model. |
+| SAC benchmark | `modeling/sac_benchmark/` | SAC comparison model. |
+| Backtest utilities | `backtest/` | Portfolio strategy returns and performance metrics. |
+| Paper figures | `result/figures/paper_figures/` | Minimal retained thesis figure assets. |
+| Run scripts | `scripts/` | Root-level training and evaluation entry points. |
+| Data contract | `data/README.md` | Required local files excluded from Git. |
 
-## Final GRPO Notes
+## Final GRPO Path
 
-The following files are identical between the former `concat_asset` and
-`concat_sharpe` folders:
+The final GRPO implementation is centered on:
 
-- `agent.py`
-- `network.py`
-- `enviroment.py`
-- `grpo.py`
-- `grpo_monthly.py`
-- `config/train_config.yaml`
+- `modeling/grpo_sharpe/train_concat_monthly_1m_discrete_rebal_step_batch_sample_seed_change.py`
+- `modeling/grpo_sharpe/grpo_monthly.py`
+- `modeling/grpo_sharpe/enviroment.py`
+- `modeling/grpo_sharpe/agent.py`
+- `modeling/grpo_sharpe/network.py`
+- `modeling/grpo_sharpe/config/train_config.yaml`
+- `modeling/grpo_sharpe/config/test_config.yaml`
 
-The `concat_sharpe` folder was kept as the main experiment because it contains
-the later Sharpe-centered evaluation notebooks, seed analysis artifacts, and
-remove-asset result folders.
+The environment returns Sharpe-based rewards through `reward_cond: sharpe`.
+`grpo_monthly.py` then computes trajectory-level group returns and applies
+min-max normalization to form the GRPO advantage.
 
-## Seed and Remove-Asset Results
+## Benchmarks
 
-Seed result files such as `dominant_one_hot_seed_test_*.xlsx` store strategy
-selection outputs with columns like:
+PPO benchmark:
 
-- `risk_parity`
-- `min_var`
-- `max_sharpe`
-- `paa`
-- `dominant_strategy`
+- `modeling/ppo_benchmark/train_5d_discrete_rebal_step_seed.py`
+- `modeling/ppo_benchmark/run.py`
+- `modeling/ppo_benchmark/agent.py`
+- `modeling/ppo_benchmark/enviroment.py`
+- `modeling/ppo_benchmark/config/train_config.yaml`
+- `modeling/ppo_benchmark/config/test_config.yaml`
 
-Remove-asset experiments are identified by paths or filenames containing:
+SAC benchmark:
 
-- `del_asset`
-- `remove`
-- `benchmark_del`
-- `grpo_del`
-- `concat_portfolio_test_monthly_v2_remove.pt`
+- `modeling/sac_benchmark/train_5d_discrete_rebal_step_seed.py`
+- `modeling/sac_benchmark/run.py`
+- `modeling/sac_benchmark/agent.py`
+- `modeling/sac_benchmark/enviroment.py`
+- `modeling/sac_benchmark/config/train_config.yaml`
+- `modeling/sac_benchmark/config/test_config.yaml`
 
-## Code Notes
+## Excluded From Submission Surface
 
-- `config/train_config.yaml` may show `reward_cond: "combined_reward"`, but the final sweep scripts override it with `reward_cond: "sharpe"`.
-- Some training scripts still contain historical output paths pointing to the old folder names.
-- `train_concat_monthly_1m_discrete_rebal_step_batch_sample_seed_change4.py` is kept as a seed-test or small-run script, not as the main full training run.
-- Scripts importing `TARN_MAPPO`, `grpo_min_max`, `utils`, or `tarn.TARN` are historical or externally dependent and are not part of the final GRPO Sharpe path.
+The submitted branch excludes local datasets, checkpoints, W&B artifacts,
+large intermediate tables, old external-model experiments, and broken legacy
+min-max variant scripts. The original code history is preserved in the backup
+branch.
