@@ -4,14 +4,26 @@ This file maps the submitted code surface to the paper workflow.
 
 | Stage | Location | Role |
 |---|---|---|
-| Data construction | `data_pipeline/` | Builds local price, feature, and tensor artifacts. |
+| Data construction | `data_pipeline/` | Final notebooks for price preparation, strategy features, and RL state tensors. |
 | Final model | `modeling/grpo_sharpe/` | GRPO with Sharpe reward and min-max normalized group-return advantage. |
 | PPO benchmark | `modeling/ppo_benchmark/` | PPO comparison model. |
 | SAC benchmark | `modeling/sac_benchmark/` | SAC comparison model. |
 | Backtest utilities | `backtest/` | Portfolio strategy returns and performance metrics. |
 | Paper figures | `result/figures/paper_figures/` | Minimal retained thesis figure assets. |
 | Run scripts | `scripts/` | Root-level training and evaluation entry points. |
-| Data contract | `data/README.md` | Required local files excluded from Git. |
+| Data contract | `DATA_CONTRACT.md` | Data periods, lookback window, feature definitions, and leakage boundary. |
+
+## Data Pipeline
+
+The submitted data pipeline is limited to the final model-input path:
+
+- `data_pipeline/01_prepare_price_universe.ipynb`
+- `data_pipeline/02_create_chronological_splits.ipynb`
+- `data_pipeline/03_build_rl_state_tensor.ipynb`
+
+These notebooks implement the paper path from raw prices to 52-dimensional RL
+states: 252-trading-day lookback, four strategy portfolios, 13 features per
+strategy, and train-set-only min-max scaling.
 
 ## Final GRPO Path
 
@@ -52,6 +64,6 @@ SAC benchmark:
 ## Excluded From Submission Surface
 
 The submitted branch excludes local datasets, checkpoints, W&B artifacts,
-large intermediate tables, old external-model experiments, and broken legacy
-min-max variant scripts. The original code history is preserved in the backup
-branch.
+large intermediate tables, exploratory notebooks, earlier data-construction
+variants, robustness-only asset-removal notebooks, and external-model
+experiments.

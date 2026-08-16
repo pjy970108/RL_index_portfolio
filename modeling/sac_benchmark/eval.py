@@ -35,10 +35,6 @@ if __name__ == "__main__":
     with open(CONFIG_DIR / "test_config.yaml", "r") as f:
         config = yaml.safe_load(f)
         
-    train_data_path = "data/train_v3.csv"
-    test_data_path = "data/test_v3.csv"
-    test_pt = "data/portfolio_price/concat_portfolio_test_monthly_v1.pt"
-    
     device = torch.device(config.get("device", "cuda:0"))
     config["device"] = device
     
@@ -61,8 +57,8 @@ if __name__ == "__main__":
     update_interval = config["update_interval_map"].get(traj_len, 60)
     config["update_interval"] = update_interval
     config["batch_samples"] = config["batch_samples"].get(traj_len, 5)
-    config["TRADE_START_DATE"] = "2019-01-01"
-    config["TRADE_END_DATE"] = "2024-12-31"
+    config["TRADE_START_DATE"] = config["TEST_START_DATE"]
+    config["TRADE_END_DATE"] = config["TEST_END_DATE"]
     env = Stock_Env(config=config, states=test_tensor, index_df=index_test_all_df, future_df = future_test_all_df, eval=True)
     
     agent = DiscreteSACAgent(env)
