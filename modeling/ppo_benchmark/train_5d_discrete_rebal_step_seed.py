@@ -180,7 +180,7 @@ def main_wandb():
     # lr = 5e-5
     # 경로 없으면 경로 생성하는 코드
     # 6. 모델 저장 경로 설정
-    model_path = OUTPUT_DIR / f'{traj_len}_seed_v3'
+    model_path = OUTPUT_DIR / f'{traj_len}_seed_runs'
     os.makedirs(model_path, exist_ok=True)
 
     save_filename = (

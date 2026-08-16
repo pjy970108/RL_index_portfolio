@@ -2,10 +2,10 @@
 
 # 📁 데이터 경로 설정
 data_paths:
-  index_before_csv : "data/before_train_v3.csv"
-  index_train_csv: "data/train_v3.csv"
-  future_before_csv: "data/before_future_train_v3.csv"
-  future_train_csv: "data/future_train_v3.csv"
+  index_before_csv : "data/index_lookback.csv"
+  index_train_csv: "data/index_train.csv"
+  future_before_csv: "data/future_lookback.csv"
+  future_train_csv: "data/future_train.csv"
   train_pt: "data/portfolio_price/concat_portfolio_train_monthly_v1.pt"
   valid_pt : "data/portfolio_price/concat_portfolio_valid_monthly_v1.pt"
 

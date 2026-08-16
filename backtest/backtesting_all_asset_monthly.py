@@ -233,7 +233,6 @@ def eval_partial_backtests_v2(
         strategies['paa'] = backtest_paa_from_pivot(equal_pivot_return, all_pivot_paa_score, look_backs, rebalance_every, top_n, 0.0, cost,rebalance_every)
 
         strategies['equal'] = backtest_equal_weight_20day(equal_pivot_return, rebalance_every, look_backs, cost, rebalance_every)
-        print(len(strategies['equal'][0]))
  
         
     except Exception as e:

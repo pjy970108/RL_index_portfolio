@@ -50,45 +50,18 @@ def compute_max_sharpe_min_var(mu, cov_matrix, risk_free_rate=0.0):
     ]
 
     prob = cp.Problem(objective, constraints)
-    prob.solve()
-    
-    if w_tilde.value is not None and k.value is not None and k.value > 0:
-        w = w_tilde.value / k.value
-        return w
-    else:
+    try:
+        prob.solve()
+        if w_tilde.value is not None and k.value is not None and k.value > 0:
+            w = w_tilde.value / k.value
+            return w
+        else:
+            print("최적화 실패. 균등 포트폴리오로 fallback.")
+            return np.ones(n) / n
+    except cp.error.SolverError as e:
+        print(f"최적화 오류: {e}")
         print("최적화 실패. 균등 포트폴리오로 fallback.")
-        return np.zeros(n)
-
-
-# def compute_max_sharpe_min_var(mu, cov_matrix, risk_free_rate=0.0):
-#     n = len(mu)
-#     x = cp.Variable(n)
-#     excess_mu = mu - risk_free_rate
-#     w_tilde = cp.Variable(n)  # 치환된 weight (w_tilde = k * w)
-#     k = cp.Variable(nonneg=True)  # 스케일 변수
-#     objective = cp.Minimize(cp.quad_form(w_tilde, cov_matrix))
-
-#     constraints = [
-#         excess_mu.T @ w_tilde == 1,   # 초과수익률 고정
-#         cp.sum(w_tilde) == k,          # w_tilde = k * w
-#         w_tilde >= 0          # w_tilde = k * w
-#     ]
-
-#     prob = cp.Problem(objective, constraints)
-#     try:
-#         prob.solve()
-#         if w_tilde.value is not None and k.value is not None and k.value > 0:
-#             w = w_tilde.value / k.value
-#             return w
-#         else:
-#             print("최적화 실패. 균등 포트폴리오로 fallback.")
-#             print("여기")
-#             return np.zeros(n)
-#     except cp.error.SolverError as e:
-#         print(f"최적화 오류: {e}")
-#         print("최적화 실패. 균등 포트폴리오로 fallback.")
-#         return np.zeros(n)
-
+        return np.ones(n) / n
 
 def backtest_strategy(returns, compute_weights_fn, rebalance_every=20, window_days=252, cost=0.003, period = 20,**kwargs):
     dates = returns.index
@@ -271,7 +244,7 @@ def backtest_paa_from_pivot(returns: pd.DataFrame,
 
         weights = pd.Series(0, index=returns.columns, dtype=float)
         if len(selected) > 0:
-            weights[selected] = 1 / top_n
+            weights[selected] = 1 / len(selected)
 
         if i + rebalance_every < len(dates) - rebalance_every:
             sub_returns = returns.iloc[i:i + rebalance_every]

@@ -8,7 +8,7 @@ This file maps the submitted code surface to the paper workflow.
 | Final model | `modeling/grpo_sharpe/` | GRPO with Sharpe reward and min-max normalized group-return advantage. |
 | PPO benchmark | `modeling/ppo_benchmark/` | PPO comparison model. |
 | SAC benchmark | `modeling/sac_benchmark/` | SAC comparison model. |
-| Backtest utilities | `backtest/` | Portfolio strategy returns and performance metrics. |
+| Backtest utilities | `backtest/` | Final daily/monthly strategy-return wrappers and performance metrics. |
 | Evaluation | `evaluation/` | Final OOS evaluation protocol, performance summaries, and statistical tests. |
 | Paper figures | `result/figures/paper_figures/` | Minimal retained thesis figure assets. |
 | Run scripts | `scripts/` | Root-level training and evaluation entry points. |

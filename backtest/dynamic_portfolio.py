@@ -42,11 +42,11 @@ def compute_max_sharpe_min_var(mu, cov_matrix, risk_free_rate=0.0):
             return w
         else:
             print("최적화 실패. 균등 포트폴리오로 fallback.")
-            return np.zeros(n)
+            return np.ones(n) / n
     except cp.error.SolverError as e:
         print(f"최적화 오류: {e}")
         print("최적화 실패. 균등 포트폴리오로 fallback.")
-        return np.zeros(n)
+        return np.ones(n) / n
 
 
 def backtest_strategy(returns, compute_weights_fn, rebalance_every=20, window_days=252, cost=0.003, **kwargs):

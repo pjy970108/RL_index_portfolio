@@ -53,7 +53,7 @@ RL_index_portfolio/
 |   |-- grpo_sharpe/               # Final GRPO implementation
 |   |-- ppo_benchmark/             # PPO benchmark
 |   `-- sac_benchmark/             # SAC benchmark
-|-- backtest/                      # Strategy return and metric utilities
+|-- backtest/                      # Final strategy backtest and metric utilities
 |-- evaluation/                    # OOS evaluation protocol and statistical tests
 |-- result/figures/paper_figures/  # Minimal paper figure assets
 |-- scripts/                       # Shell entry points
