@@ -1,11 +1,11 @@
-# RL Index Portfolio
+# DPSS-RL
 
-Official code for **Strategy-Level Reinforcement Learning Framework for
-Portfolio Management**.
+Official implementation for **DPSS-RL**, a reinforcement-learning framework for
+portfolio strategy selection.
 
-The final model is a GRPO-based portfolio strategy selector. It uses
-Sharpe-based environment rewards and min-max normalized group returns for GRPO
-advantage estimation. PPO and SAC are included as benchmark methods.
+DPSS-RL trains a GRPO-based portfolio strategy selector. It uses Sharpe-based
+environment rewards and min-max normalized group returns for GRPO advantage
+estimation. PPO and SAC are included as benchmark methods.
 
 ## Table of Contents
 
@@ -89,6 +89,10 @@ pip install -r requirements.txt
 
 Large datasets, feature tensors, trained checkpoints, and W&B run directories
 are not tracked in Git.
+
+To run training or evaluation, place the required local data files under
+`data/` and trained checkpoints under the paths configured in
+`modeling/*/config/*.yaml`.
 
 The paper uses price data from February 2002 through December 2024. Because
 strategy returns and state features require a 252-trading-day lookback, the
@@ -190,4 +194,4 @@ outputs are intentionally excluded from the submitted code surface.
 
 ## Citation
 
-Citation information can be added after the paper metadata is finalized.
+Citation metadata will be updated after the paper information is finalized.
