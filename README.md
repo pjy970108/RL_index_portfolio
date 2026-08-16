@@ -1,113 +1,229 @@
 # RL Index Portfolio
 
-This repository contains the research code for reinforcement-learning based
-index portfolio strategy selection. It is organized around the final GRPO
-Sharpe experiment, with PPO and SAC implementations kept as comparison
-baselines.
+## Overview
 
-Large local datasets, feature tensors, trained model checkpoints, and W&B run
-artifacts are intentionally excluded from Git.
+Official implementation of reinforcement-learning based index portfolio
+strategy selection.
 
-## Project Scope
+Pipeline:
 
-The project studies reinforcement-learning based portfolio strategy selection.
-The final research direction uses GRPO with a Sharpe-based reward, while PPO and
-SAC are kept as comparison baselines.
+1. Data preprocessing — Build portfolio price, indicator, and train/test tensor artifacts
+2. GRPO training — Train the final Sharpe-based GRPO strategy selector
+3. Benchmark training — Train PPO and SAC benchmark methods
+4. Evaluation — Run monthly portfolio evaluation, seed checks, and remove-asset tests
+5. Backtest analysis — Compute portfolio performance metrics and generate result figures
 
-At a high level, the agent selects among existing dynamic portfolio strategies:
+---
 
-- `risk_parity`
-- `min_var`
-- `max_sharpe`
-- `paa`
+## Table of Contents
 
-The selected strategy returns are evaluated with portfolio performance metrics
-such as annual return, Sharpe, Sortino, Calmar, drawdown, and volatility.
+- [Overview](#overview)
+- [Project Structure](#project-structure)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Data Availability](#data-availability)
+- [Citation](#citation)
 
-## Repository Layout
+---
 
-```text
-core/
-  portfolio_strategies/        Shared backtesting, dynamic portfolio, and metric code
-
-experiments/
-  grpo_sharpe/                 Final GRPO Sharpe-centered experiment
-
-baselines/
-  ppo/                         PPO comparison baseline experiments
-  sac/                         SAC comparison baseline experiments
-
-notebooks/
-  data_preprocessing/          Data construction and feature tensor notebooks
-  eda_distribution/            EDA and distribution checks
-  final_figures/               Final reporting / paper figure notebooks
-
-results/
-  figures/                     Generated figures and image assets
-
-legacy/
-  grpo_concat_asset_original/  Earlier concat-asset GRPO experiment folder
-  old_grpo/                    Earlier GRPO prototype code
-  delete_candidates/           Empty or obsolete files kept for review
-```
-
-## Main Code Path
-
-The final GRPO experiment is located under:
+## Project Structure
 
 ```text
-experiments/grpo_sharpe/
+RL_index_portfolio/
+|
+├── data_pipeline/                     # Portfolio data and tensor construction
+│   ├── make_indicator.ipynb
+│   ├── make_indicator_no_tarn.ipynb
+│   ├── make_portfolio_pricing_total_price.ipynb
+│   ├── make_portfolio_pricing_total_price_v2_asset_del.ipynb
+│   └── eda_distribution/
+│
+├── modeling/                          # Model training and evaluation
+│   ├── grpo_sharpe/                   # Main GRPO Sharpe implementation
+│   │   ├── agent.py
+│   │   ├── network.py
+│   │   ├── enviroment.py
+│   │   ├── grpo.py
+│   │   ├── grpo_monthly.py
+│   │   ├── eval_monthly.py
+│   │   └── config/
+│   ├── ppo_benchmark/                 # PPO benchmark
+│   └── sac_benchmark/                 # SAC benchmark
+│
+├── backtest/                          # Portfolio strategies and metrics
+│   ├── dynamic_portfolio.py
+│   ├── dynamic_portfolio_monthly.py
+│   ├── backtesting_all_asset.py
+│   ├── backtesting_all_asset_monthly.py
+│   └── eval_metric.py
+│
+├── figure/                            # Figure and result analysis notebooks
+│   ├── total_plot.ipynb
+│   ├── total_plot_total_seed.ipynb
+│   ├── total_average_remove_asset_model.ipynb
+│   └── total_sensitive_test.ipynb
+│
+├── result/                            # Generated result figures and analysis assets
+│   └── figures/
+│
+├── scripts/                           # Shell entry points
+│   ├── train_grpo.sh
+│   ├── eval_grpo.sh
+│   ├── train_ppo.sh
+│   └── train_sac.sh
+│
+├── data/                              # Local data placeholder; large files are not tracked
+│   └── README.md
+│
+├── requirements.txt
+├── CODE_MAP.md
+└── README.md
 ```
 
-Important files:
+---
 
-- `agent.py`: PPO-style policy wrapper used by GRPO training/evaluation code.
-- `network.py`: actor network for discrete strategy selection.
-- `enviroment.py`: portfolio environment using dynamic strategy backtests.
-- `grpo.py`, `grpo_monthly.py`: GRPO rollout, update, and evaluation routines.
-- `config/train_config.yaml`: shared training configuration baseline.
-- `eval_monthly.py`: monthly evaluation script with the final Sharpe model path used in later experiments.
+## Requirements
 
-Note: the folder name `enviroment.py` is preserved from the original research
-code to avoid rewriting history.
+- Python 3.10 or later is recommended.
+- PyTorch should match the local CUDA or CPU environment.
 
-## Baselines
+Main dependencies:
 
-PPO and SAC are retained as comparison baselines:
+- `torch`
+- `pandas`, `numpy`, `scipy`
+- `PyYAML`, `joblib`, `tqdm`
+- `cvxpy`
+- `statsmodels`, `arch`
+- `wandb` for experiment tracking
+- `openpyxl` for Excel result files
 
-- `baselines/ppo/`
-- `baselines/sac/`
+---
 
-These folders contain multiple historical variants and comparison context.
+## Installation
 
-## Additional Experiments
+### 1. Clone the repository
 
-The GRPO Sharpe folder also includes:
+```bash
+git clone https://github.com/pjy970108/RL_index_portfolio.git
+cd RL_index_portfolio
+```
 
-- seed sweep and seed analysis notebooks, including `eval_monthly_all_seed.ipynb`
-- remove-asset evaluation notebooks, including `eval_monthly_remove_asset.ipynb`
-- `result/grpo_del/` and `result/benchmark_del/` for remove-asset result analysis
-- strategy-selection outputs such as `dominant_one_hot_seed_test_*.xlsx`
+### 2. Create a Python environment
 
-## Data and Model Files
+```bash
+conda create -n rl-index-portfolio python=3.10
+conda activate rl-index-portfolio
+```
 
-The following are intentionally not stored in Git:
+### 3. Install PyTorch
 
-- `data/`
+Install PyTorch for the local CUDA or CPU environment.
+
+### 4. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Usage
+
+All shell scripts should be run from the project root. The scripts set
+`PYTHONPATH` so that model code can import the shared files in `backtest/`.
+
+### Step 1 — Data Preprocessing
+
+Run the notebooks in `data_pipeline/` to construct local tensor files.
+
+Important notebooks:
+
+- `data_pipeline/make_indicator_no_tarn.ipynb`
+- `data_pipeline/make_portfolio_pricing_total_price.ipynb`
+- `data_pipeline/make_portfolio_pricing_total_price_v2_asset_del.ipynb`
+
+### Step 2 — GRPO Training
+
+```bash
+bash scripts/train_grpo.sh
+```
+
+Main implementation:
+
+```text
+modeling/grpo_sharpe/
+```
+
+### Step 3 — PPO/SAC Benchmark Training
+
+```bash
+bash scripts/train_ppo.sh
+bash scripts/train_sac.sh
+```
+
+Benchmark implementations:
+
+```text
+modeling/ppo_benchmark/
+modeling/sac_benchmark/
+```
+
+### Step 4 — GRPO Evaluation
+
+```bash
+bash scripts/eval_grpo.sh
+```
+
+Additional evaluation notebooks:
+
+- `modeling/grpo_sharpe/eval_monthly_all_seed.ipynb`
+- `modeling/grpo_sharpe/eval_monthly_remove_asset.ipynb`
+- `modeling/grpo_sharpe/eval_sub_period.ipynb`
+
+### Step 5 — Result Figures
+
+Run the notebooks in `figure/` to generate final plots and summary figures.
+
+Generated figure assets are stored under:
+
+```text
+result/figures/
+```
+
+---
+
+## Data Availability
+
+Large datasets, feature tensors, trained checkpoints, and W&B run directories
+are not included in this repository.
+
+Expected local artifacts are described in:
+
+```text
+data/README.md
+```
+
+The ignored local artifacts include:
+
+- `data/*`
 - `*.csv`
 - `*.pt`
 - `*.pth`
 - `wandb/`
 
-The code and notebooks may reference local paths for these artifacts. Those
-paths document the research workflow, while the large local artifacts are
-managed outside this Git repository.
+---
 
-## Historical or External Dependencies
+## Notes
 
-Some legacy scripts reference modules that are not part of this repository,
-including `TARN_MAPPO`, `grpo_min_max`, `utils`, and `tarn.TARN`. These belong
-to earlier experiment variants and should not be treated as the final GRPO
-Sharpe code path.
+- GRPO is the final model path.
+- PPO and SAC are benchmark methods.
+- The final GRPO sweeps use the Sharpe reward setting.
+- `train_concat_monthly_1m_discrete_rebal_step_batch_sample_seed_change4.py`
+  is a seed/small-run script, not the main full training entry point.
 
-See `CODE_MAP.md` for the detailed file classification.
+---
+
+## Citation
+
+Citation information can be added after the paper metadata is finalized.

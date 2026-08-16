@@ -175,7 +175,8 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-/data
+/data/*
+!/data/README.md
 /wandb
 /grpo/model
 **/wandb/
