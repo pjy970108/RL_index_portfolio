@@ -9,6 +9,7 @@ This file maps the submitted code surface to the paper workflow.
 | PPO benchmark | `modeling/ppo_benchmark/` | PPO comparison model. |
 | SAC benchmark | `modeling/sac_benchmark/` | SAC comparison model. |
 | Backtest utilities | `backtest/` | Portfolio strategy returns and performance metrics. |
+| Evaluation | `evaluation/` | Final OOS evaluation protocol, performance summaries, and statistical tests. |
 | Paper figures | `result/figures/paper_figures/` | Minimal retained thesis figure assets. |
 | Run scripts | `scripts/` | Root-level training and evaluation entry points. |
 | Data contract | `DATA_CONTRACT.md` | Data periods, lookback window, feature definitions, and leakage boundary. |
@@ -60,6 +61,20 @@ SAC benchmark:
 - `modeling/sac_benchmark/enviroment.py`
 - `modeling/sac_benchmark/config/train_config.yaml`
 - `modeling/sac_benchmark/config/test_config.yaml`
+
+## Evaluation
+
+The final evaluation is documented and implemented through:
+
+- `evaluation/README.md`
+- `evaluation/statistical_tests.py`
+
+The evaluation contract is the complete test window
+`2019.01.01-2024.12.31`. Validation is used for early stopping and model
+selection only. The statistical test utilities cover Newey-West HAC mean-return
+tests, Ledoit-Wolf style Sharpe ratio difference tests, monthly distribution
+summaries, downside 25% summaries, profit/loss summaries, and regime-level
+metrics.
 
 ## Excluded From Submission Surface
 

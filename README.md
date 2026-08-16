@@ -16,6 +16,7 @@ advantage estimation. PPO and SAC are included as benchmark methods.
 - [Data](#data)
 - [Data Pipeline](#data-pipeline)
 - [Usage](#usage)
+- [Evaluation](#evaluation)
 - [Results](#results)
 - [Citation](#citation)
 
@@ -53,6 +54,7 @@ RL_index_portfolio/
 |   |-- ppo_benchmark/             # PPO benchmark
 |   `-- sac_benchmark/             # SAC benchmark
 |-- backtest/                      # Strategy return and metric utilities
+|-- evaluation/                    # OOS evaluation protocol and statistical tests
 |-- result/figures/paper_figures/  # Minimal paper figure assets
 |-- scripts/                       # Shell entry points
 |-- DATA_CONTRACT.md               # Data period and feature contract
@@ -155,9 +157,29 @@ Benchmark files:
 - `modeling/ppo_benchmark/train_5d_discrete_rebal_step_seed.py`
 - `modeling/sac_benchmark/train_5d_discrete_rebal_step_seed.py`
 
+## Evaluation
+
+Final evaluation uses the complete out-of-sample test period
+`2019.01.01-2024.12.31`. Validation results are used only for early stopping
+and model selection; the selected checkpoint is then applied unchanged to the
+test period.
+
+The evaluation surface includes:
+
+- Performance metrics: annualized return, Sharpe, Sortino, Calmar, MDD, and
+  profit factor.
+- Statistical tests: Newey-West HAC t-test for monthly mean returns and
+  Ledoit-Wolf style Sharpe ratio difference tests.
+- Monthly return distribution, downside 25% return analysis, profit/loss month
+  analysis, market-regime analysis, and robustness checks.
+
+See [evaluation/README.md](evaluation/README.md) and
+[`evaluation/statistical_tests.py`](evaluation/statistical_tests.py) for the
+evaluation protocol and reusable test utilities.
+
 ## Results
 
-Only minimal paper figure assets are retained in:
+Minimal paper figure assets are retained in:
 
 ```text
 result/figures/paper_figures/
