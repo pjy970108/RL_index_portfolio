@@ -1,60 +1,57 @@
 # Code Map
 
-This file summarizes the paper-code layout.
+This file maps the submitted code surface to the paper workflow.
 
-| Stage | Location | Notes |
+| Stage | Location | Role |
 |---|---|---|
-| Data preprocessing | `data_pipeline/` | Portfolio pricing, indicator construction, tensor generation, and EDA notebooks. |
-| Main model | `modeling/grpo_sharpe/` | Final GRPO Sharpe implementation. |
-| PPO benchmark | `modeling/ppo_benchmark/` | PPO comparison implementation and evaluation notebooks. |
-| SAC benchmark | `modeling/sac_benchmark/` | SAC comparison implementation and evaluation notebooks. |
-| Backtest utilities | `backtest/` | Dynamic portfolio strategies, partial backtests, and performance metrics. |
-| Figure generation | `figure/` | Final figure and result analysis notebooks. |
-| Result assets | `result/` | Generated PNG figures and analysis outputs. |
-| Run scripts | `scripts/` | Shell entry points for training and evaluation. |
-| Local data contract | `data/README.md` | Expected local files that are not committed to Git. |
+| Data construction | `data_pipeline/` | Builds local price, feature, and tensor artifacts. |
+| Final model | `modeling/grpo_sharpe/` | GRPO with Sharpe reward and min-max normalized group-return advantage. |
+| PPO benchmark | `modeling/ppo_benchmark/` | PPO comparison model. |
+| SAC benchmark | `modeling/sac_benchmark/` | SAC comparison model. |
+| Backtest utilities | `backtest/` | Portfolio strategy returns and performance metrics. |
+| Paper figures | `result/figures/paper_figures/` | Minimal retained thesis figure assets. |
+| Run scripts | `scripts/` | Root-level training and evaluation entry points. |
+| Data contract | `data/README.md` | Required local files excluded from Git. |
 
-## Main GRPO Files
+## Final GRPO Path
 
+The final GRPO implementation is centered on:
+
+- `modeling/grpo_sharpe/train_concat_monthly_1m_discrete_rebal_step_batch_sample_seed_change.py`
+- `modeling/grpo_sharpe/grpo_monthly.py`
+- `modeling/grpo_sharpe/enviroment.py`
 - `modeling/grpo_sharpe/agent.py`
 - `modeling/grpo_sharpe/network.py`
-- `modeling/grpo_sharpe/enviroment.py`
-- `modeling/grpo_sharpe/grpo.py`
-- `modeling/grpo_sharpe/grpo_monthly.py`
 - `modeling/grpo_sharpe/config/train_config.yaml`
-- `modeling/grpo_sharpe/eval_monthly.py`
-- `modeling/grpo_sharpe/eval_monthly_all_seed.ipynb`
-- `modeling/grpo_sharpe/eval_monthly_remove_asset.ipynb`
+- `modeling/grpo_sharpe/config/test_config.yaml`
 
-## Benchmark Files
+The environment returns Sharpe-based rewards through `reward_cond: sharpe`.
+`grpo_monthly.py` then computes trajectory-level group returns and applies
+min-max normalization to form the GRPO advantage.
+
+## Benchmarks
 
 PPO benchmark:
 
-- `modeling/ppo_benchmark/agent.py`
-- `modeling/ppo_benchmark/network.py`
+- `modeling/ppo_benchmark/train_5d_discrete_rebal_step_seed.py`
 - `modeling/ppo_benchmark/run.py`
-- `modeling/ppo_benchmark/run_monthly.py`
-- `modeling/ppo_benchmark/eval_monthly.ipynb`
-- `modeling/ppo_benchmark/eval_monthly_total.ipynb`
-- `modeling/ppo_benchmark/eval_monthly_del_asset.ipynb`
+- `modeling/ppo_benchmark/agent.py`
+- `modeling/ppo_benchmark/enviroment.py`
+- `modeling/ppo_benchmark/config/train_config.yaml`
+- `modeling/ppo_benchmark/config/test_config.yaml`
 
 SAC benchmark:
 
-- `modeling/sac_benchmark/agent.py`
-- `modeling/sac_benchmark/network.py`
-- `modeling/sac_benchmark/buffer.py`
+- `modeling/sac_benchmark/train_5d_discrete_rebal_step_seed.py`
 - `modeling/sac_benchmark/run.py`
-- `modeling/sac_benchmark/run_monthly.py`
-- `modeling/sac_benchmark/eval_monthly.ipynb`
-- `modeling/sac_benchmark/eval_monthly_all.ipynb`
-- `modeling/sac_benchmark/eval_monthly_del.ipynb`
+- `modeling/sac_benchmark/agent.py`
+- `modeling/sac_benchmark/enviroment.py`
+- `modeling/sac_benchmark/config/train_config.yaml`
+- `modeling/sac_benchmark/config/test_config.yaml`
 
-## Experiment Notes
+## Excluded From Submission Surface
 
-- The final sweep scripts use the Sharpe reward setting.
-- Seed result files such as `dominant_one_hot_seed_test_*.xlsx` store strategy
-  selection outputs with columns such as `risk_parity`, `min_var`,
-  `max_sharpe`, `paa`, and `dominant_strategy`.
-- Remove-asset experiments are marked with names such as `del_asset`, `remove`,
-  `benchmark_del`, `grpo_del`, and
-  `concat_portfolio_test_monthly_v2_remove.pt`.
+The submitted branch excludes local datasets, checkpoints, W&B artifacts,
+large intermediate tables, old external-model experiments, and broken legacy
+min-max variant scripts. The original code history is preserved in the backup
+branch.

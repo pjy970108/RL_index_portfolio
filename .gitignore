@@ -178,6 +178,7 @@ cython_debug/
 /data/*
 !/data/README.md
 /wandb
+/outputs/
 /grpo/model
 **/wandb/
 **/model/

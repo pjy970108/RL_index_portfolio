@@ -7,9 +7,14 @@ import copy
 import pandas as pd
 import torch
 import yaml
+from pathlib import Path
 from enviroment import Stock_Env
 from agent import DiscreteSACAgent
 from run import eval_env
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parents[1]
+CONFIG_DIR = SCRIPT_DIR / "config"
 
 
 
@@ -27,7 +32,7 @@ if __name__ == "__main__":
     SEED = 42
     set_seed(SEED)
     
-    with open("./portfolio_price_discrete_SAC/config/test_config.yaml", "r") as f:
+    with open(CONFIG_DIR / "test_config.yaml", "r") as f:
         config = yaml.safe_load(f)
         
     train_data_path = "data/train_v3.csv"
@@ -61,6 +66,13 @@ if __name__ == "__main__":
     env = Stock_Env(config=config, states=test_tensor, index_df=index_test_all_df, future_df = future_test_all_df, eval=True)
     
     agent = DiscreteSACAgent(env)
-    agent.load(config["data_paths"]["model_path"])
+    model_path = PROJECT_ROOT / config["data_paths"]["model_path"]
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"Checkpoint not found: {model_path}. "
+            "Place the SAC checkpoint at the configured path or update "
+            "data_paths.model_path in modeling/sac_benchmark/config/test_config.yaml."
+        )
+    agent.load(str(model_path))
     model_return, strategy_returnsm, weight_rebal, strategy_weight = eval_env(env, agent)
     

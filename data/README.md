@@ -1,26 +1,59 @@
 # Data Artifacts
 
-Large datasets, feature tensors, model checkpoints, and W&B artifacts are kept
-outside Git.
+Large datasets, tensor files, checkpoints, and W&B artifacts are not tracked in
+Git. Place local artifacts under this directory before running training or
+evaluation.
 
-The research scripts reference local artifacts such as:
+## Required CSV Files
 
-- portfolio price and feature CSV files
-- train/test tensor files with `.pt` extensions
-- remove-asset tensor files such as `concat_portfolio_test_monthly_v2_remove.pt`
-- trained model checkpoints with `.pth` extensions
-- W&B run directories
-
-Expected ignored paths and extensions:
+Default train configs expect:
 
 ```text
-data/
-*.csv
-*.pt
-*.pth
-wandb/
+data/before_train_v3.csv
+data/train_v3.csv
+data/before_future_train_v3.csv
+data/future_train_v3.csv
 ```
 
-Before running training or evaluation scripts, place the required local data and
-checkpoint files at the paths referenced by the corresponding script or update
-the script/config paths for your local environment.
+Default test configs expect:
+
+```text
+data/train_v3.csv
+data/test_v3.csv
+data/future_train_v3.csv
+data/future_test_v3.csv
+```
+
+## Required Tensor Files
+
+```text
+data/portfolio_price/concat_portfolio_train_monthly_v1.pt
+data/portfolio_price/concat_portfolio_valid_monthly_v1.pt
+data/portfolio_price/concat_portfolio_test_monthly_v1.pt
+```
+
+## Optional Robustness Artifacts
+
+Asset-exclusion experiments used separate local files, for example:
+
+```text
+data/train_del_asset_v1.csv
+data/test_del_asset_v1.csv
+data/future_train_del_asset_v1.csv
+data/future_test_del_asset_v1.csv
+data/portfolio_price/concat_portfolio_test_monthly_v2_remove.pt
+```
+
+These are not required for the default training scripts.
+
+## Checkpoints
+
+Trained checkpoints are expected under `outputs/` by default:
+
+```text
+outputs/grpo_sharpe/final_grpo_model.pth
+outputs/ppo_benchmark/final_ppo_model.pth
+outputs/sac_benchmark/final_sac_model.pth
+```
+
+Update each `config/test_config.yaml` if local checkpoint names differ.

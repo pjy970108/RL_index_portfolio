@@ -1,19 +1,11 @@
 # RL Index Portfolio
 
-## Overview
+Official code for **Strategy-Level Reinforcement Learning Framework for
+Portfolio Management**.
 
-Official implementation of reinforcement-learning based index portfolio
-strategy selection.
-
-Pipeline:
-
-1. Data preprocessing — Build portfolio price, indicator, and train/test tensor artifacts
-2. GRPO training — Train the final Sharpe-based GRPO strategy selector
-3. Benchmark training — Train PPO and SAC benchmark methods
-4. Evaluation — Run monthly portfolio evaluation, seed checks, and remove-asset tests
-5. Backtest analysis — Compute portfolio performance metrics and generate result figures
-
----
+The final model is a GRPO-based portfolio strategy selector. It uses
+Sharpe-based environment rewards and min-max normalized group returns for GRPO
+advantage estimation. PPO and SAC are included as benchmark methods.
 
 ## Table of Contents
 
@@ -21,208 +13,144 @@ Pipeline:
 - [Project Structure](#project-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Data](#data)
 - [Usage](#usage)
-- [Data Availability](#data-availability)
+- [Results](#results)
 - [Citation](#citation)
 
----
+## Overview
+
+The project trains reinforcement-learning agents to select among portfolio
+strategies over monthly rebalancing periods.
+
+Main workflow:
+
+1. Build portfolio price and feature tensors from local market data.
+2. Train the final GRPO model with Sharpe reward.
+3. Train PPO and SAC benchmark models.
+4. Evaluate trained checkpoints on the test period.
+5. Use the retained paper figures for thesis reporting.
+
+The GRPO update converts trajectory-level group returns into min-max normalized
+advantages:
+
+```text
+advantage = (group_return - min(group_returns)) / (max(group_returns) - min(group_returns))
+```
+
+This is the min-max component used by the final GRPO training code. It is
+separate from feature min-max normalization in the data pipeline.
 
 ## Project Structure
 
 ```text
 RL_index_portfolio/
 |
-├── data_pipeline/                     # Portfolio data and tensor construction
-│   ├── make_indicator.ipynb
-│   ├── make_indicator_no_tarn.ipynb
-│   ├── make_portfolio_pricing_total_price.ipynb
-│   ├── make_portfolio_pricing_total_price_v2_asset_del.ipynb
-│   └── eda_distribution/
-│
-├── modeling/                          # Model training and evaluation
-│   ├── grpo_sharpe/                   # Main GRPO Sharpe implementation
-│   │   ├── agent.py
-│   │   ├── network.py
-│   │   ├── enviroment.py
-│   │   ├── grpo.py
-│   │   ├── grpo_monthly.py
-│   │   ├── eval_monthly.py
-│   │   └── config/
-│   ├── ppo_benchmark/                 # PPO benchmark
-│   └── sac_benchmark/                 # SAC benchmark
-│
-├── backtest/                          # Portfolio strategies and metrics
-│   ├── dynamic_portfolio.py
-│   ├── dynamic_portfolio_monthly.py
-│   ├── backtesting_all_asset.py
-│   ├── backtesting_all_asset_monthly.py
-│   └── eval_metric.py
-│
-├── figure/                            # Figure and result analysis notebooks
-│   ├── total_plot.ipynb
-│   ├── total_plot_total_seed.ipynb
-│   ├── total_average_remove_asset_model.ipynb
-│   └── total_sensitive_test.ipynb
-│
-├── result/                            # Generated result figures and analysis assets
-│   └── figures/
-│
-├── scripts/                           # Shell entry points
-│   ├── train_grpo.sh
-│   ├── eval_grpo.sh
-│   ├── train_ppo.sh
-│   └── train_sac.sh
-│
-├── data/                              # Local data placeholder; large files are not tracked
-│   └── README.md
-│
-├── requirements.txt
-├── CODE_MAP.md
-└── README.md
+|-- data_pipeline/                 # Local data construction notebooks
+|-- modeling/
+|   |-- grpo_sharpe/               # Final GRPO implementation
+|   |-- ppo_benchmark/             # PPO benchmark
+|   `-- sac_benchmark/             # SAC benchmark
+|-- backtest/                      # Strategy return and metric utilities
+|-- result/figures/paper_figures/  # Minimal paper figure assets
+|-- scripts/                       # Shell entry points
+|-- data/README.md                 # Local data contract
+|-- CODE_MAP.md
+`-- requirements.txt
 ```
-
----
 
 ## Requirements
 
 - Python 3.10 or later is recommended.
-- PyTorch should match the local CUDA or CPU environment.
+- Install a PyTorch build that matches the local CUDA or CPU environment.
+- W&B is used for training sweeps. Use `wandb login` for online tracking, or
+  set `WANDB_MODE=offline` for local/offline runs.
 
-Main dependencies:
-
-- `torch`
-- `pandas`, `numpy`, `scipy`
-- `PyYAML`, `joblib`, `tqdm`
-- `cvxpy`
-- `statsmodels`, `arch`
-- `wandb` for experiment tracking
-- `openpyxl` for Excel result files
-
----
-
-## Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/pjy970108/RL_index_portfolio.git
-cd RL_index_portfolio
-```
-
-### 2. Create a Python environment
-
-```bash
-conda create -n rl-index-portfolio python=3.10
-conda activate rl-index-portfolio
-```
-
-### 3. Install PyTorch
-
-Install PyTorch for the local CUDA or CPU environment.
-
-### 4. Install dependencies
+Install Python dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+## Installation
+
+```bash
+git clone https://github.com/pjy970108/RL_index_portfolio.git
+cd RL_index_portfolio
+conda create -n rl-index-portfolio python=3.10
+conda activate rl-index-portfolio
+pip install -r requirements.txt
+```
+
+## Data
+
+Large datasets, feature tensors, trained checkpoints, and W&B run directories
+are not tracked in Git.
+
+Place local data under `data/` according to [data/README.md](data/README.md).
+The default configs expect files such as:
+
+- `data/train_v3.csv`
+- `data/test_v3.csv`
+- `data/future_train_v3.csv`
+- `data/future_test_v3.csv`
+- `data/portfolio_price/concat_portfolio_train_monthly_v1.pt`
+- `data/portfolio_price/concat_portfolio_valid_monthly_v1.pt`
+- `data/portfolio_price/concat_portfolio_test_monthly_v1.pt`
+
+Trained checkpoints are expected under `outputs/` by default. The directory is
+ignored by Git.
 
 ## Usage
 
-All shell scripts should be run from the project root. The scripts set
-`PYTHONPATH` so that model code can import the shared files in `backtest/`.
+Run commands from the repository root.
 
-### Step 1 — Data Preprocessing
-
-Run the notebooks in `data_pipeline/` to construct local tensor files.
-
-Important notebooks:
-
-- `data_pipeline/make_indicator_no_tarn.ipynb`
-- `data_pipeline/make_portfolio_pricing_total_price.ipynb`
-- `data_pipeline/make_portfolio_pricing_total_price_v2_asset_del.ipynb`
-
-### Step 2 — GRPO Training
+### Train GRPO
 
 ```bash
 bash scripts/train_grpo.sh
 ```
 
-Main implementation:
+Main files:
 
-```text
-modeling/grpo_sharpe/
+- `modeling/grpo_sharpe/train_concat_monthly_1m_discrete_rebal_step_batch_sample_seed_change.py`
+- `modeling/grpo_sharpe/grpo_monthly.py`
+- `modeling/grpo_sharpe/enviroment.py`
+
+### Evaluate GRPO
+
+```bash
+bash scripts/eval_grpo.sh
 ```
 
-### Step 3 — PPO/SAC Benchmark Training
+Before evaluation, place the trained checkpoint at the path configured in:
+
+```text
+modeling/grpo_sharpe/config/test_config.yaml
+```
+
+### Train Benchmarks
 
 ```bash
 bash scripts/train_ppo.sh
 bash scripts/train_sac.sh
 ```
 
-Benchmark implementations:
+Benchmark files:
+
+- `modeling/ppo_benchmark/train_5d_discrete_rebal_step_seed.py`
+- `modeling/sac_benchmark/train_5d_discrete_rebal_step_seed.py`
+
+## Results
+
+Only minimal paper figure assets are retained in:
 
 ```text
-modeling/ppo_benchmark/
-modeling/sac_benchmark/
+result/figures/paper_figures/
 ```
 
-### Step 4 — GRPO Evaluation
-
-```bash
-bash scripts/eval_grpo.sh
-```
-
-Additional evaluation notebooks:
-
-- `modeling/grpo_sharpe/eval_monthly_all_seed.ipynb`
-- `modeling/grpo_sharpe/eval_monthly_remove_asset.ipynb`
-- `modeling/grpo_sharpe/eval_sub_period.ipynb`
-
-### Step 5 — Result Figures
-
-Run the notebooks in `figure/` to generate final plots and summary figures.
-
-Generated figure assets are stored under:
-
-```text
-result/figures/
-```
-
----
-
-## Data Availability
-
-Large datasets, feature tensors, trained checkpoints, and W&B run directories
-are not included in this repository.
-
-Expected local artifacts are described in:
-
-```text
-data/README.md
-```
-
-The ignored local artifacts include:
-
-- `data/*`
-- `*.csv`
-- `*.pt`
-- `*.pth`
-- `wandb/`
-
----
-
-## Notes
-
-- GRPO is the final model path.
-- PPO and SAC are benchmark methods.
-- The final GRPO sweeps use the Sharpe reward setting.
-- `train_concat_monthly_1m_discrete_rebal_step_batch_sample_seed_change4.py`
-  is a seed/small-run script, not the main full training entry point.
-
----
+Intermediate notebooks, W&B artifacts, model checkpoints, and large tabular
+outputs are intentionally excluded from the submitted code surface.
 
 ## Citation
 

@@ -290,21 +290,3 @@ class PPO:
         return {
             "loss": self.last_loss
         }
-
-
-
-if __name__ == "__main__":
-    import torch
-    import copy
-    import pandas as pd
-    from enviroment import EnvConfig, Stock_Env
-    import numpy as np
-    from agent import PPO
-    train_tensor = torch.load("/Users/pjy97/Desktop/hyu/research/RL/code/feature_extract/train_feature_extract.pt")
-    train_dataset = pd.read_csv("/Users/pjy97/Desktop/hyu/research/RL/code/data/train_data.csv", index_col=0)
-    test_tensor = torch.load("/Users/pjy97/Desktop/hyu/research/RL/code/feature_extract/train_feature_extract.pt")
-    config = EnvConfig(train_tensor, train_dataset, 22)
-    
-    env = copy.deepcopy(Stock_Env(train_tensor, train_dataset, 22))
-    
-    agent = PPO(config)

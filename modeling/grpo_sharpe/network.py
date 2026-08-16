@@ -5,7 +5,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
 import torch.nn as nn
 from torch.distributions import MultivariateNormal, Categorical, Dirichlet
-# from tarn.TARN import FFCModule
 import torch.nn.functional as F  # ✅ 이거 필요!
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

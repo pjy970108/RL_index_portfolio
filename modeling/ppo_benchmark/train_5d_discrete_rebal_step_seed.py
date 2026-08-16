@@ -7,17 +7,21 @@ import random
 import yaml
 import pandas as pd
 import pickle
+from pathlib import Path
 
 from run import train_main_sub_env
 from agent import PPO
 import copy
-# sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "base_line_model/Task_1_FinRL_DeepSeek_Stock")))
-# print("Current working directory:", os.getcwd())
-# print(sys.path)
 from enviroment import Stock_Env
 from ptflops import get_model_complexity_info  # 상단에 추가
 
 import wandb 
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parents[1]
+CONFIG_DIR = SCRIPT_DIR / "config"
+OUTPUT_DIR = PROJECT_ROOT / "outputs" / "ppo_benchmark"
+
 # 논문 설정 기반 초기 sweep 구성
 
 
@@ -78,10 +82,10 @@ def main_wandb():
     set_seed(config_wandb.seed)
     
     # 1. config 파일 로드
-    with open("./portfolio_price_discrete_PPO_sharpe/config/train_config.yaml", "r") as f:
+    with open(CONFIG_DIR / "train_config.yaml", "r") as f:
         config = yaml.safe_load(f)
     
-    with open("./portfolio_price_discrete_PPO_sharpe/config/test_config.yaml", "r") as f:
+    with open(CONFIG_DIR / "test_config.yaml", "r") as f:
         test_config = yaml.safe_load(f)
 
     # 2. 디바이스 처리
@@ -176,7 +180,7 @@ def main_wandb():
     # lr = 5e-5
     # 경로 없으면 경로 생성하는 코드
     # 6. 모델 저장 경로 설정
-    model_path = f'./portfolio_price_discrete_PPO_sharpe/model/{traj_len}_seed_v3/'
+    model_path = OUTPUT_DIR / f'{traj_len}_seed_v3'
     os.makedirs(model_path, exist_ok=True)
 
     save_filename = (

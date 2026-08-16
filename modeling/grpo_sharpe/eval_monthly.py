@@ -7,10 +7,15 @@ import copy
 import pandas as pd
 import torch
 import yaml
+from pathlib import Path
 from enviroment import Stock_Env
 from agent import PPO
 from grpo_monthly import test_grpo
 
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parents[1]
+CONFIG_DIR = SCRIPT_DIR / "config"
 
 
 if __name__ == "__main__":
@@ -26,7 +31,7 @@ if __name__ == "__main__":
 
     SEED = 42
     set_seed(SEED)
-    with open("./portfolio_price_discrete_rebal_step_1m_concat_sharpe/config/test_config.yaml", "r") as f:
+    with open(CONFIG_DIR / "test_config.yaml", "r") as f:
         config = yaml.safe_load(f)
         
     train_data_path = "data/train_v3.csv"
@@ -58,12 +63,17 @@ if __name__ == "__main__":
     config["TRADE_START_DATE"] = "2019-01-01"
     config["TRADE_END_DATE"] = "2024-12-31"
     env = Stock_Env(config=config, states=test_tensor, index_df=index_test_all_df, future_df = future_test_all_df, eval=True)
-    model_path =  f"/workspace/portfolio_price_discrete_rebal_step_1m_concat_sharpe/model/good_result_final/final_1m_actor_lr1e-06_clip_grad1_epslion_0.2batch_sample_2048_mu50_num_group16_num_steps10_reward_cond_sharpe_seed44_grpo_model.pth"
+    model_path = PROJECT_ROOT / config["data_paths"]["model_path"]
     
 
     agent = PPO(env, eval=True)
-    # agent.load(config["data_paths"]["model_path"])
-    agent.load(model_path)
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"Checkpoint not found: {model_path}. "
+            "Place the trained GRPO checkpoint at the configured path or update "
+            "data_paths.model_path in modeling/grpo_sharpe/config/test_config.yaml."
+        )
+    agent.load(str(model_path))
 
     model_return, strategy_returnsm, weight_rebal, strategy_weight = test_grpo(env, agent)
     

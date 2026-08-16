@@ -3,11 +3,7 @@ import sys
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_dir)
 import numpy as np
-# sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "base_line_model/Task_1_FinRL_DeepSeek_Stock")))
-# print("Current working directory:", os.getcwd())
-# print(sys.path)
 sys.path.append(os.getcwd())
-print("Current working directory:", os.getcwd())
 import dynamic_portfolio as dp
 from backtesting_all_asset import run_partial_backtests_v2  # 함수만 명시적으로 import
 from torch.utils.data import Dataset, DataLoader
@@ -415,14 +411,3 @@ class Stock_Env:
             # print(save_data)
             empty_df = pd.concat([empty_df, save_data], axis=0)
             return empty_df
-
-    
-    
-if __name__ == "__main__":
-    import torch
-    import copy
-    import pandas as pd
-    train_tensor = torch.load("/Users/pjy97/Desktop/hyu/research/RL/code/feature_extract/train_feature_extract.pt")
-    train_dataset = pd.read_csv("/Users/pjy97/Desktop/hyu/research/RL/code/data/train_data.csv", index_col=0)
-    test_tensor = torch.load("/Users/pjy97/Desktop/hyu/research/RL/code/feature_extract/train_feature_extract.pt")
-    env = copy.deepcopy(Stock_Env(train_tensor, train_dataset))

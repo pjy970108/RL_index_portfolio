@@ -17,7 +17,7 @@ device: "cuda:0"  # 예: "cpu", "cuda:0", "cuda:1"
 env_name: "Portfolio Allocation"
 trajectory_length: "3m"  # 선택: "1y", "6m", "3m"
 window_size: 20
-reward_cond: "combined_reward"
+reward_cond: "sharpe"
 
 # 리밸런싱 및 trajectory 세팅
 update_interval_map:
